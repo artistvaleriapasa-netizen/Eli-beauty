@@ -1,0 +1,9 @@
+{
+  "name": "Eli Beauty OS",
+  "short_name": "Eli Beauty",
+  "description": "SaaS pentru saloane de înfrumusețare",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#be185d"
+}

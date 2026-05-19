@@ -1,0 +1,25 @@
+{
+  "common": {
+    "appName": "Eli Beauty OS",
+    "loading": "Se încarcă...",
+    "save": "Salvează",
+    "cancel": "Anulează",
+    "delete": "Șterge",
+    "edit": "Editează",
+    "add": "Adaugă"
+  },
+  "auth": {
+    "login": "Autentificare",
+    "signup": "Înregistrare",
+    "logout": "Deconectare",
+    "email": "Email",
+    "password": "Parolă"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "appointments": "Programări",
+    "services": "Servicii",
+    "clients": "Clienți",
+    "settings": "Setări"
+  }
+}
