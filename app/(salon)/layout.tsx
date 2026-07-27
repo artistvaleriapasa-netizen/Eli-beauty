@@ -1,110 +1,156 @@
+"use client";
+
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
-  Scissors,
   Users,
+  Sparkles,
+  UsersRound,
+  BarChart3,
+  Megaphone,
+  Bot,
   Settings,
-  LogOut,
+  Menu,
+  X,
 } from "lucide-react";
-import { logout } from "@/app/(auth)/login/actions";
+import { useState } from "react";
+import { SALON } from "@/lib/demo-data";
 
-const NAV_ITEMS = [
+const NAV = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/programari", label: "Programări", icon: Calendar },
-  { href: "/servicii", label: "Servicii", icon: Scissors },
   { href: "/clienti", label: "Clienți", icon: Users },
+  { href: "/servicii", label: "Servicii", icon: Sparkles },
+  { href: "/echipa", label: "Echipă", icon: UsersRound },
+  { href: "/rapoarte", label: "Rapoarte", icon: BarChart3 },
+  { href: "/marketing", label: "Marketing", icon: Megaphone },
+  { href: "/ai", label: "Assistant AI", icon: Bot, badge: "PRO" },
   { href: "/setari", label: "Setări", icon: Settings },
-] as const;
+];
 
-export default async function SalonLayout({
+export default function SalonLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // Ia salonul curent (primul în care e user-ul membru; în viitor poate fi un selector)
-  const { data: membership } = await supabase
-    .from("salon_members")
-    .select("salon_id, role, salons(id, name, slug)")
-    .eq("user_id", user.id)
-    .limit(1)
-    .maybeSingle();
-
-  if (!membership) {
-    redirect("/signup");
-  }
-
-  const salon = membership.salons as unknown as {
-    id: string;
-    name: string;
-    slug: string;
-  };
+  const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-muted/30">
-      {/* Sidebar */}
-      <aside className="w-64 bg-background border-r border-border flex flex-col">
-        <div className="p-6 border-b border-border">
-          <Link href="/dashboard" className="flex items-center gap-2 mb-4">
-            <span className="font-[family-name:var(--font-playfair)] text-xl font-bold text-rose-brand">
-              Eli
-            </span>
-            <span className="text-xs tracking-wider text-muted-foreground uppercase">
-              Beauty OS
-            </span>
-          </Link>
-          <div>
-            <p className="text-sm font-medium truncate">{salon.name}</p>
-            <p className="text-xs text-muted-foreground">@{salon.slug}</p>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50/40 via-white to-pink-50/20">
+      {/* Mobile top bar */}
+      <div className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-rose-100 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-700 to-rose-900 text-white font-serif italic font-bold text-lg flex items-center justify-center">
+            E
           </div>
+          <span className="font-semibold text-gray-900">{SALON.name}</span>
         </div>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="p-2 hover:bg-rose-50 rounded-lg"
+        >
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
 
-        <nav className="flex-1 p-3 space-y-1">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
-            >
-              <item.icon className="h-4 w-4 text-muted-foreground" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+      <div className="flex">
+        {/* Sidebar */}
+        <aside
+          className={`${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:translate-x-0 fixed lg:sticky top-0 left-0 h-screen w-64 bg-white border-r border-rose-100 z-40 transition-transform overflow-y-auto`}
+        >
+          <div className="p-6 border-b border-rose-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-rose-700 to-rose-900 text-white font-serif italic font-bold text-2xl flex items-center justify-center shadow-lg shadow-rose-200">
+                E
+              </div>
+              <div>
+                <div className="font-serif text-lg font-bold text-gray-900 leading-tight">
+                  Eli Beauty
+                </div>
+                <div className="text-xs text-gray-500">{SALON.city}</div>
+              </div>
+            </div>
+            <div className="mt-4 flex items-center gap-2 text-xs">
+              <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-medium">
+                Plan {SALON.subscription.tier}
+              </span>
+              <span className="text-gray-400">Activ</span>
+            </div>
+          </div>
 
-        <div className="p-3 border-t border-border">
-          <p className="text-xs text-muted-foreground px-3 mb-1">{user.email}</p>
-          <form action={async () => {
-            "use server";
-            await logout();
-            redirect("/login");
-          }}>
-            <button
-              type="submit"
-              className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors text-left"
-            >
-              <LogOut className="h-4 w-4 text-muted-foreground" />
-              Deconectare
-            </button>
-          </form>
-        </div>
-      </aside>
+          <nav className="p-3 space-y-1">
+            {NAV.map((item) => {
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-gradient-to-r from-rose-100 to-pink-100 text-rose-900"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-5 h-5 ${isActive ? "text-rose-700" : "text-gray-500"}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gradient-to-r from-amber-400 to-amber-600 text-white font-bold">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
 
-      {/* Main */}
-      <main className="flex-1 overflow-auto">
-        <div className="container max-w-6xl mx-auto p-8">{children}</div>
-      </main>
+          <div className="p-4 mt-4 border-t border-rose-100">
+            <div className="rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-100 p-4">
+              <div className="text-xs font-semibold text-rose-900 mb-1">
+                📱 App mobilă
+              </div>
+              <p className="text-[11px] text-rose-700 leading-relaxed">
+                Adaugă Eli Beauty pe ecranul de start pentru acces rapid.
+              </p>
+            </div>
+
+            <div className="mt-4 flex items-center gap-3 px-1">
+              <div className="w-9 h-9 rounded-full bg-rose-100 text-rose-800 flex items-center justify-center font-bold text-sm">
+                D
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-gray-900 truncate">
+                  Demo User
+                </div>
+                <div className="text-xs text-gray-500 truncate">
+                  Owner · demo@elibeauty.ro
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Backdrop for mobile */}
+        {mobileOpen && (
+          <div
+            className="lg:hidden fixed inset-0 bg-black/40 z-30"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+
+        {/* Main content */}
+        <main className="flex-1 min-w-0 lg:pl-0">
+          <div className="max-w-7xl mx-auto p-4 lg:p-8">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
